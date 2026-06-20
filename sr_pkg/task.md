@@ -15,6 +15,10 @@
 - `[x]` Fix all dynamic text and indicator colors in `new_script.js` to ensure light backgrounds contrast perfectly
 - `[x]` Rebuild layout grids (Analytics metrics, Autopilot controls, Fact checklists) to feel premium and spacious
 - `[x]` Verify server compatibility and merge Javascript changes into the compiled HTML output
+- `[/]` Backend: Implement save settings endpoint and server-side image proxy for Gemini 2.5 Flash Image (Nano Banana)
+- `[/]` Frontend: Add Gemini API Key input field and load/save handlers
+- `[/]` Frontend: Route image calls to the local proxy endpoint
+- `[/]` Verification: Verify E2E Gemini generation and fallback
 - `[ ]` Frontend: Build interactive visual editor inputs, SVG illustrations dictionary, and canvas parser templates in `index.html`
 - `[ ]` Frontend: Integrate Facebook account fields, Analytics Dashboard statistics, and Autopilot controls in `index.html`
 - `[ ]` Frontend: Develop the Semantic Theme Processor to parse topic text and dynamically generate matching palettes, fonts, and graphics for any arbitrary theme

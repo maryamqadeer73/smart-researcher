@@ -524,6 +524,22 @@ input:checked + .slider:before{transform:translateX(18px)}
         <div class="panel">
           <div class="panel-head">
             <div>
+              <div class="ph-title">Gemini Image Generation Settings</div>
+              <div class="ph-sub">Add a Google AI Studio key to use Gemini 2.5 Flash Image (Nano Banana)</div>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="input-group" style="margin-bottom:12px">
+              <label class="input-label" for="gemini-api-key">Gemini API Key</label>
+              <input type="password" id="gemini-api-key" class="text-input" placeholder="Enter AIzaSy... API Key">
+            </div>
+            <button class="btn btn-neon" onclick="saveGeminiKey()">Save API Key</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
               <div class="ph-title">Link Profiles</div>
               <div class="ph-sub">Enable accounts for simulated auto-posting at peak hours</div>
             </div>
@@ -1954,7 +1970,7 @@ function updatePreviews() {
           ? "sleek flat vector icon graphic illustration, flat colors, minimalist design, modern look, isolated on plain solid background, no text, "
           : "sleek professional high-quality clean detailed photograph, realistic studio lighting, modern high-tech aesthetic, ";
         const finalPrompt = stylePrefix + slide.visual_val;
-        const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=400&height=220&nologo=true&seed=${idx + 10}`;
+        const imgUrl = `${API}/api/image-proxy?prompt=${encodeURIComponent(finalPrompt)}&seed=${idx + 10}`;
         visualHtml = `
           <div class="slide-visual-container" style="margin-top:8px">
             <div style="width:100%; height:95px; border-radius:8px; overflow:hidden; border:1px solid ${colors.cardBorder}; box-shadow:0 3px 10px rgba(0,0,0,0.04); position:relative; background:${colors.cardBg}">
@@ -2277,6 +2293,25 @@ async function saveSocialAccounts() {
   }
 }
 
+async function saveGeminiKey() {
+  const keyVal = document.getElementById('gemini-api-key').value.trim();
+  try {
+    const res = await fetch(`${API}/api/settings/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gemini_api_key: keyVal })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      toast(' Gemini API Key saved successfully!');
+    } else {
+      throw new Error(data.error);
+    }
+  } catch(e) {
+    toast(`ERROR:  Failed to save API Key: ${e.message}`);
+  }
+}
+
 // ── LOAD QUEUE ────────────────────────────────────────────────────────────────
 async function loadQueueList() {
   try {
@@ -2367,6 +2402,10 @@ async function loadAutopilotStatus() {
     if (data.ok) {
       document.getElementById('autopilot-toggle').checked = data.status.autopilot;
       document.getElementById('autopilot-niche').value = data.status.niche;
+      
+      if (document.getElementById('gemini-api-key')) {
+        document.getElementById('gemini-api-key').value = data.status.gemini_api_key || '';
+      }
       
       const pulse = document.querySelector('.pulse');
       if (data.status.autopilot) {

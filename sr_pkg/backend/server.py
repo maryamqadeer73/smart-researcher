@@ -482,6 +482,73 @@ def clear_analytics():
     save_json_file(ANALYTICS_FILE, [])
     return jsonify({"ok": True, "message": "Analytics cleared successfully!"})
 
+@app.route("/api/settings/save", methods=["POST"])
+def save_settings():
+    body = request.json or {}
+    settings = load_json_file(SETTINGS_FILE, {"autopilot": False, "niche": "All of the above (my niche covers all tech)"})
+    for k, v in body.items():
+        settings[k] = v
+    if save_json_file(SETTINGS_FILE, settings):
+        return jsonify({"ok": True, "message": "Settings saved successfully!"})
+    return jsonify({"ok": False, "error": "Failed to save settings"}), 500
+
+@app.route("/api/image-proxy")
+def image_proxy():
+    prompt = request.args.get("prompt", "").strip()
+    if not prompt:
+        return "Prompt is required", 400
+        
+    settings = load_json_file(SETTINGS_FILE, {})
+    gemini_key = settings.get("gemini_api_key", "").strip()
+    
+    if gemini_key:
+        print(f"[AI Image Proxy] Generating using Gemini 2.5 Flash Image (Nano Banana) for prompt: '{prompt[:40]}...'")
+        try:
+            import requests as req
+            import base64
+            from flask import Response
+            
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key={gemini_key}"
+            headers = {"Content-Type": "application/json"}
+            payload = {
+                "contents": [{
+                    "role": "user",
+                    "parts": [{"text": prompt}]
+                }],
+                "generationConfig": {
+                    "responseModalities": ["IMAGE"]
+                }
+            }
+            res = req.post(url, headers=headers, json=payload, timeout=25)
+            res_json = res.json()
+            
+            candidates = res_json.get("candidates", [])
+            if candidates:
+                parts = candidates[0].get("content", {}).get("parts", [])
+                if parts:
+                    inline_data = parts[0].get("inlineData", {})
+                    img_b64 = inline_data.get("data", "")
+                    mime_type = inline_data.get("mimeType", "image/jpeg")
+                    if img_b64:
+                        img_data = base64.b64decode(img_b64)
+                        return Response(img_data, mimetype=mime_type)
+            
+            print(f"[AI Image Proxy] Gemini failed or returned invalid format. Response: {res_json}")
+        except Exception as e:
+            print(f"[AI Image Proxy] Error calling Gemini: {e}")
+            
+    # Fallback to Pollinations AI
+    print(f"[AI Image Proxy] Redirecting to Pollinations AI fallback for prompt: '{prompt[:40]}...'")
+    import requests as req
+    from flask import Response
+    try:
+        url = f"https://image.pollinations.ai/prompt/{prompt}?width=400&height=220&nologo=true"
+        r = req.get(url, timeout=15)
+        return Response(r.content, mimetype=r.headers.get("content-type", "image/jpeg"))
+    except Exception as e:
+        print(f"[AI Image Proxy] Pollinations fallback failed: {e}")
+        return "Failed to load image", 500
+
 if __name__ == "__main__":
     print("\n[i] Smart Researcher starting...")
     print("[*] Open: http://localhost:5001\n")
