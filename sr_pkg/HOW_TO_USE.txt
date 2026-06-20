@@ -1,0 +1,29 @@
+==============================================
+  SMART RESEARCHER — HOW TO USE
+==============================================
+
+STEP 1: Double-click LAUNCH.bat
+        (Keep the black window open)
+
+STEP 2: Browser opens at http://localhost:5001
+
+STEP 3: Paste your FREE Gemini API key
+        Get it: https://aistudio.google.com/app/apikey
+
+STEP 4:
+  a) Click "Scrape Live Trends" → pulls REAL data
+     from Reddit, YouTube, HackerNews, Dev.to, ProductHunt
+  
+  b) Click any trend → "Analyze This" 
+     → AI generates viral script + hook + caption
+  
+  c) Go to "Daily Briefing" → full strategy for today
+
+==============================================
+  WHAT MAKES THIS SMARTER THAN CHATGPT
+==============================================
+
+ChatGPT guesses what's trending.
+This tool SCRAPES REAL DATA then analyzes it.
+
+Real data + AI analysis = better than generic AI.

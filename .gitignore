@@ -1,0 +1,16 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Local databases and configs (queues, accounts, logs)
+sr_pkg/data/*.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

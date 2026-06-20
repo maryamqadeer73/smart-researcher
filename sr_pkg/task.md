@@ -1,0 +1,21 @@
+# Tasks: Carousel Generator & Scheduler Implementation
+
+- `[x]` Backend: Refactor `scraper.py` into `fact_finder.py` (authentic fact retrieval using Wikipedia API / web fetching)
+- `[x]` Backend: Refactor `analyzer.py` into `carousel_engine.py` (local carousel slide formatter and daily briefing builder)
+- `[x]` Backend: Update `server.py` with endpoints `/api/fetch-facts`, `/api/generate-carousel`, `/api/schedule-post`, `/api/accounts`, and `/api/queue` plus background scheduler thread
+- `[x]` Frontend: Redesign `index.html` (remove Gemini input, implement Custom Topic, Carousel Builder, Accounts Connection, and Queue views)
+- `[x]` Verification: Verify all endpoints and frontend functionality
+- `[x]` Backend: Update `carousel_engine.py` to support dynamic heuristic visual types (charts, tables, flow, icons) and active autopilot topic lists
+- `[x]` Backend: Implement Autopilot background worker, analytics logging, and design optimization weights in `server.py`
+- `[x]` Backend: Integrate the Humanized Copywriting Reframer Engine to structure slide texts using high-converting conversational hooks and pain-point stories
+- `[x]` Remove all emojis from HTML structure and dynamic Javascript generators
+- `[x]` Update fonts to a premium modern sans-serif with increased sizing and bold styles
+- `[x]` Redesign the sidebar navigation to be sleek, text-only, and highly bold
+- `[x]` Revamp dashboard panels to be modular, border-focused cards with stone/charcoal accents
+- `[x]` Fix all dynamic text and indicator colors in `new_script.js` to ensure light backgrounds contrast perfectly
+- `[x]` Rebuild layout grids (Analytics metrics, Autopilot controls, Fact checklists) to feel premium and spacious
+- `[x]` Verify server compatibility and merge Javascript changes into the compiled HTML output
+- `[ ]` Frontend: Build interactive visual editor inputs, SVG illustrations dictionary, and canvas parser templates in `index.html`
+- `[ ]` Frontend: Integrate Facebook account fields, Analytics Dashboard statistics, and Autopilot controls in `index.html`
+- `[ ]` Frontend: Develop the Semantic Theme Processor to parse topic text and dynamically generate matching palettes, fonts, and graphics for any arbitrary theme
+- `[ ]` Verification: Verify that Autopilot automatically researches, creates, schedules, publishes, generates performance data, and improves itself
