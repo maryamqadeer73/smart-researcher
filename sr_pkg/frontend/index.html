@@ -438,12 +438,19 @@ input:checked + .slider:before{transform:translateX(18px)}
                     </select>
                   </div>
                   <div>
-                    <label class="input-label" style="font-size:9px">Logo Icon Text</label>
-                    <input type="text" id="logo-icon-input" class="text-input" value="5x" style="font-size:11px;padding:6px 10px" oninput="updatePreviews()">
+                    <label class="input-label" style="font-size:9px">Logo Type</label>
+                    <select class="cfg-select" id="logo-type-select" style="font-size:11px;padding:7px 9px;margin-bottom:0" onchange="toggleLogoInputs(); updatePreviews();">
+                      <option value="image">Custom Image Logo</option>
+                      <option value="text">Custom Text Logo</option>
+                    </select>
                   </div>
                   <div>
                     <label class="input-label" style="font-size:9px">Logo Label Text</label>
-                    <input type="text" id="logo-text-input" class="text-input" value="REACH" style="font-size:11px;padding:6px 10px" oninput="updatePreviews()">
+                    <input type="text" id="logo-text-input" class="text-input" value="TECH WITH MARYAM" style="font-size:11px;padding:6px 10px" oninput="updatePreviews()">
+                  </div>
+                  <div id="logo-icon-container" style="display:none; grid-column: span 2">
+                    <label class="input-label" style="font-size:9px">Logo Icon Text</label>
+                    <input type="text" id="logo-icon-input" class="text-input" value="5x" style="font-size:11px;padding:6px 10px" oninput="updatePreviews()">
                   </div>
                   <div style="grid-column: span 2">
                     <label class="input-label" style="font-size:9px">Slide Color Scheme</label>
@@ -1028,12 +1035,21 @@ window.addEventListener('DOMContentLoaded', () => {
   loadSocialAccounts();
   loadQueueList();
   renderPaletteSelector();
+  toggleLogoInputs();
 });
 
 function styleChanged() {
   currentStyle = document.getElementById('cfg-design-style').value;
   updatePreviews();
   toast(` Style changed to: ${document.getElementById('cfg-design-style').options[document.getElementById('cfg-design-style').selectedIndex].text}`);
+}
+
+function toggleLogoInputs() {
+  const logoTypeSelect = document.getElementById('logo-type-select');
+  const iconContainer = document.getElementById('logo-icon-container');
+  if (logoTypeSelect && iconContainer) {
+    iconContainer.style.display = logoTypeSelect.value === 'text' ? 'block' : 'none';
+  }
 }
 
 // ── RENDER PALETTE SELECTOR ──────────────────────────────────────────────────
@@ -1912,16 +1928,25 @@ function updatePreviews() {
         <div style="position:absolute;bottom:-80px;right:-80px;width:300px;height:300px;background:radial-gradient(circle, ${colors.accent2} 0%, transparent 60%);opacity:0.25;filter:blur(40px);pointer-events:none"></div>`;
     }
 
+    const logoTypeSelect = document.getElementById('logo-type-select');
     const logoIconInput = document.getElementById('logo-icon-input');
     const logoTextInput = document.getElementById('logo-text-input');
     
+    const logoType = logoTypeSelect ? logoTypeSelect.value : 'image';
     let logoIcon = logoIconInput ? logoIconInput.value.trim() : '5x';
-    let logoText = logoTextInput ? logoTextInput.value.trim() : 'REACH';
+    let logoText = logoTextInput ? logoTextInput.value.trim() : 'TECH WITH MARYAM';
+    
+    let logoHtml = '';
+    if (logoType === 'image') {
+      logoHtml = `<div class="slide-logo-icon" style="background:none; border-radius:50%; overflow:hidden; width:26px; height:26px; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><img src="./logo.jpg" style="width:100%; height:100%; object-fit:cover;"></div>`;
+    } else {
+      logoHtml = `<div class="slide-logo-icon" style="background:${colors.accent2}; color:${colors.bg}">${logoIcon}</div>`;
+    }
     
     const slideHeader = `
       <div class="slide-header">
         <div class="slide-logo">
-          <div class="slide-logo-icon" style="background:${colors.accent2}; color:${colors.bg}">${logoIcon}</div>
+          ${logoHtml}
           <div>
             <div class="slide-logo-text" style="color:${colors.text}">${logoText}</div>
             ${slide.layout === 'cover' ? `<div class="slide-logo-sub" style="color:${colors.secText}">Growth Multiplied</div>` : ''}
