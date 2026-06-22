@@ -507,6 +507,27 @@ input:checked + .slider:before{transform:translateX(18px)}
                   <button class="btn btn-neon" style="width:100%" id="btn-schedule-post" onclick="submitPostToQueue()"> Queue Carousel Post</button>
                 </div>
               </div>
+
+              <!-- PUBLISH NOW PANEL -->
+              <div class="panel" style="margin-bottom:14px;border:1px solid rgba(0,200,100,0.3)">
+                <div class="panel-head" style="background:rgba(0,200,100,0.07)">
+                  <div>
+                    <div class="ph-title" style="color:var(--neon)">Publish Now — Live Posting</div>
+                    <div class="ph-sub">Instantly post carousel to your connected real accounts</div>
+                  </div>
+                </div>
+                <div class="panel-body" style="padding:12px;display:flex;flex-direction:column;gap:8px">
+                  <button class="btn btn-neon" style="width:100%;font-size:12px;padding:10px" onclick="publishNow([])">Publish to ALL Connected Platforms</button>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <button class="btn btn-ghost" style="font-size:10px;padding:6px" onclick="publishNow(['instagram'])">Instagram Only</button>
+                    <button class="btn btn-ghost" style="font-size:10px;padding:6px" onclick="publishNow(['linkedin'])">LinkedIn Only</button>
+                    <button class="btn btn-ghost" style="font-size:10px;padding:6px" onclick="publishNow(['youtube'])">YouTube Shorts</button>
+                    <button class="btn btn-ghost" style="font-size:10px;padding:6px" onclick="publishNow(['tiktok'])">TikTok Only</button>
+                  </div>
+                  <div style="font-size:9px;color:var(--muted2);margin-top:4px">Connect accounts in the <b style="color:var(--text)">Connect Accounts</b> tab first, then test credentials before publishing.</div>
+                </div>
+              </div>
+
             </div>
 
             <!-- RIGHT: Visual Slide Preview Deck -->
@@ -555,96 +576,138 @@ input:checked + .slider:before{transform:translateX(18px)}
         <div class="panel">
           <div class="panel-head">
             <div>
-              <div class="ph-title">Link Profiles</div>
-              <div class="ph-sub">Enable accounts for simulated auto-posting at peak hours</div>
+              <div class="ph-title">Link Profiles — API Credentials</div>
+              <div class="ph-sub">Enter your developer API credentials to enable live posting to your real accounts</div>
             </div>
           </div>
-          <div class="panel-body">
-            <div class="account-card">
-              <div class="ac-left">
-                <div class="ac-icon ac-li">in</div>
-                <div>
-                  <div class="ac-info-title">LinkedIn Business / Profile</div>
-                  <input type="text" id="username-linkedin" placeholder="LinkedIn Handle/Profile Name" class="text-input" style="font-size:11px;padding:4px 8px;margin-top:4px;width:200px">
+          <div class="panel-body" style="display:flex;flex-direction:column;gap:18px;padding:16px">
+
+            <!-- LINKEDIN -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="ac-icon ac-li" style="width:32px;height:32px;font-size:12px">in</div>
+                  <div>
+                    <div style="font-size:12px;font-weight:800;color:var(--text)">LinkedIn</div>
+                    <div style="font-size:10px;color:var(--muted2)">maryam-tech-141826418</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span id="status-linkedin" style="font-size:10px;font-weight:700;color:var(--muted2)">Not connected</span>
+                  <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="testConnection('linkedin')">Test</button>
                 </div>
               </div>
-              <div class="ac-right">
-                <label class="switch">
-                  <input type="checkbox" id="conn-linkedin">
-                  <span class="slider"></span>
-                </label>
+              <div style="display:grid;grid-template-columns:1fr;gap:8px">
+                <div>
+                  <label class="input-label" style="font-size:9px">Access Token <a href="https://www.linkedin.com/developers/apps" target="_blank" style="color:var(--neon);text-decoration:none;margin-left:4px">Get token →</a></label>
+                  <input type="password" id="cred-linkedin-access_token" class="text-input" placeholder="Paste LinkedIn Access Token" style="font-size:11px;padding:6px 10px">
+                </div>
+              </div>
+              <button class="btn btn-neon" style="margin-top:10px;font-size:10px;padding:5px 14px" onclick="saveCredentials('linkedin')">Save LinkedIn Credentials</button>
+            </div>
+
+            <!-- INSTAGRAM -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="ac-icon ac-ig" style="width:32px;height:32px;font-size:12px">IG</div>
+                  <div>
+                    <div style="font-size:12px;font-weight:800;color:var(--text)">Instagram</div>
+                    <div style="font-size:10px;color:var(--muted2)">maryamtech819</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span id="status-instagram" style="font-size:10px;font-weight:700;color:var(--muted2)">Not connected</span>
+                  <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="testConnection('instagram')">Test</button>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div>
+                  <label class="input-label" style="font-size:9px">Instagram User ID <a href="https://developers.facebook.com/apps/" target="_blank" style="color:var(--neon);text-decoration:none;margin-left:4px">Get ID →</a></label>
+                  <input type="text" id="cred-instagram-ig_user_id" class="text-input" placeholder="e.g. 17841412345678" style="font-size:11px;padding:6px 10px">
+                </div>
+                <div>
+                  <label class="input-label" style="font-size:9px">Meta Access Token</label>
+                  <input type="password" id="cred-instagram-access_token" class="text-input" placeholder="Paste Meta Access Token" style="font-size:11px;padding:6px 10px">
+                </div>
+              </div>
+              <button class="btn btn-neon" style="margin-top:10px;font-size:10px;padding:5px 14px" onclick="saveCredentials('instagram')">Save Instagram Credentials</button>
+            </div>
+
+            <!-- YOUTUBE -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="ac-icon" style="background:#ff0000;width:32px;height:32px;font-size:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;border-radius:6px">YT</div>
+                  <div>
+                    <div style="font-size:12px;font-weight:800;color:var(--text)">YouTube Shorts</div>
+                    <div style="font-size:10px;color:var(--muted2)">MaryamTech-f2j</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span id="status-youtube" style="font-size:10px;font-weight:700;color:var(--muted2)">Not connected</span>
+                  <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="testConnection('youtube')">Test</button>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div>
+                  <label class="input-label" style="font-size:9px">Client ID <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--neon);text-decoration:none;margin-left:4px">Get credentials →</a></label>
+                  <input type="text" id="cred-youtube-client_id" class="text-input" placeholder="Google OAuth Client ID" style="font-size:11px;padding:6px 10px">
+                </div>
+                <div>
+                  <label class="input-label" style="font-size:9px">Client Secret</label>
+                  <input type="password" id="cred-youtube-client_secret" class="text-input" placeholder="Google OAuth Client Secret" style="font-size:11px;padding:6px 10px">
+                </div>
+                <div style="grid-column:span 2">
+                  <label class="input-label" style="font-size:9px">Refresh Token</label>
+                  <input type="password" id="cred-youtube-refresh_token" class="text-input" placeholder="YouTube OAuth Refresh Token" style="font-size:11px;padding:6px 10px">
+                </div>
+              </div>
+              <button class="btn btn-neon" style="margin-top:10px;font-size:10px;padding:5px 14px" onclick="saveCredentials('youtube')">Save YouTube Credentials</button>
+            </div>
+
+            <!-- TIKTOK -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="ac-icon ac-tk" style="width:32px;height:32px;font-size:12px">TK</div>
+                  <div>
+                    <div style="font-size:12px;font-weight:800;color:var(--text)">TikTok</div>
+                    <div style="font-size:10px;color:var(--muted2)">maryam.tech2</div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <span id="status-tiktok" style="font-size:10px;font-weight:700;color:var(--muted2)">Not connected</span>
+                  <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="testConnection('tiktok')">Test</button>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr;gap:8px">
+                <div>
+                  <label class="input-label" style="font-size:9px">Access Token <a href="https://developers.tiktok.com/apps/" target="_blank" style="color:var(--neon);text-decoration:none;margin-left:4px">Get token →</a></label>
+                  <input type="password" id="cred-tiktok-access_token" class="text-input" placeholder="Paste TikTok Access Token" style="font-size:11px;padding:6px 10px">
+                </div>
+              </div>
+              <button class="btn btn-neon" style="margin-top:10px;font-size:10px;padding:5px 14px" onclick="saveCredentials('tiktok')">Save TikTok Credentials</button>
+            </div>
+
+            <!-- HOW TO GET KEYS GUIDE -->
+            <div style="background:rgba(0,200,100,0.05);border:1px solid rgba(0,200,100,0.2);border-radius:8px;padding:12px">
+              <div style="font-size:11px;font-weight:800;color:var(--neon);margin-bottom:6px">How to Get Your API Keys</div>
+              <div style="font-size:10px;color:var(--muted2);line-height:1.7">
+                <b style="color:var(--text)">LinkedIn:</b> Go to linkedin.com/developers → Create App → Request OAuth token with w_member_social permission.<br>
+                <b style="color:var(--text)">Instagram:</b> Go to developers.facebook.com → Create App → Add Instagram Graph API → Get your Instagram Business Account ID and long-lived token.<br>
+                <b style="color:var(--text)">YouTube:</b> Go to Google Cloud Console → Enable YouTube Data API v3 → Create OAuth 2.0 credentials → Run OAuth flow to get a refresh token.<br>
+                <b style="color:var(--text)">TikTok:</b> Go to developers.tiktok.com → Create App → Request Content Posting API → Get access token via OAuth.
               </div>
             </div>
 
-            <div class="account-card">
-              <div class="ac-left">
-                <div class="ac-icon ac-ig">IG</div>
-                <div>
-                  <div class="ac-info-title">Instagram Professional Account</div>
-                  <input type="text" id="username-instagram" placeholder="Instagram Username" class="text-input" style="font-size:11px;padding:4px 8px;margin-top:4px;width:200px">
-                </div>
-              </div>
-              <div class="ac-right">
-                <label class="switch">
-                  <input type="checkbox" id="conn-instagram">
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
-
-            <div class="account-card">
-              <div class="ac-left">
-                <div class="ac-icon ac-x">𝕏</div>
-                <div>
-                  <div class="ac-info-title">𝕏 / Twitter Account</div>
-                  <input type="text" id="username-x" placeholder="𝕏 Username" class="text-input" style="font-size:11px;padding:4px 8px;margin-top:4px;width:200px">
-                </div>
-              </div>
-              <div class="ac-right">
-                <label class="switch">
-                  <input type="checkbox" id="conn-x">
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
-
-            <div class="account-card">
-              <div class="ac-left">
-                <div class="ac-icon ac-tk">TK</div>
-                <div>
-                  <div class="ac-info-title">TikTok Account</div>
-                  <input type="text" id="username-tiktok" placeholder="TikTok Username" class="text-input" style="font-size:11px;padding:4px 8px;margin-top:4px;width:200px">
-                </div>
-              </div>
-              <div class="ac-right">
-                <label class="switch">
-                  <input type="checkbox" id="conn-tiktok">
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
-
-            <div class="account-card">
-              <div class="ac-left">
-                <div class="ac-icon" style="background:#1877f2">f</div>
-                <div>
-                  <div class="ac-info-title">Facebook Page / Group</div>
-                  <input type="text" id="username-facebook" placeholder="Facebook Page Name" class="text-input" style="font-size:11px;padding:4px 8px;margin-top:4px;width:200px">
-                </div>
-              </div>
-              <div class="ac-right">
-                <label class="switch">
-                  <input type="checkbox" id="conn-facebook">
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
-            
-            <div style="margin-top:20px;display:flex;justify-content:flex-end">
-              <button class="btn btn-neon" onclick="saveSocialAccounts()">SUCCESS:  Save Social Configurations</button>
-            </div>
           </div>
         </div>
+
+        <div style="margin-top:20px;display:flex;justify-content:flex-end">
+          <button class="btn btn-ghost" onclick="saveSocialAccounts()" style="font-size:11px;padding:6px 16px">Sync Profile Names</button>
+        </div>
+
       </div>
 
       <!-- ══ 5. POST QUEUE ══ -->
@@ -1036,6 +1099,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadQueueList();
   renderPaletteSelector();
   toggleLogoInputs();
+  loadSavedCredentials();
 });
 
 function styleChanged() {
@@ -2324,6 +2388,153 @@ async function saveGeminiKey() {
     }
   } catch(e) {
     toast(`ERROR:  Failed to save API Key: ${e.message}`);
+  }
+}
+
+// ── SOCIAL MEDIA CREDENTIALS ──────────────────────────────────────────────────
+
+async function saveCredentials(platform) {
+  // Gather all input fields for this platform (pattern: cred-{platform}-{field})
+  const prefix = `cred-${platform}-`;
+  const inputs = document.querySelectorAll(`[id^="${prefix}"]`);
+  const credData = {};
+  inputs.forEach(inp => {
+    const field = inp.id.replace(prefix, '');
+    credData[field] = inp.value.trim();
+  });
+
+  if (Object.values(credData).every(v => !v)) {
+    toast(`ERROR: Please fill in at least one field for ${platform}`);
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/api/credentials/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [platform]: credData })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      toast(` ${platform.charAt(0).toUpperCase() + platform.slice(1)} credentials saved!`);
+    } else {
+      throw new Error(data.error);
+    }
+  } catch(e) {
+    toast(`ERROR:  Save failed: ${e.message}`);
+  }
+}
+
+async function testConnection(platform) {
+  const statusEl = document.getElementById(`status-${platform}`);
+  if (statusEl) {
+    statusEl.textContent = 'Testing...';
+    statusEl.style.color = 'var(--amber)';
+  }
+  try {
+    const res = await fetch(`${API}/api/accounts/test-connection`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ platform })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      toast(` ${platform}: Connected as ${data.name}`);
+      if (statusEl) {
+        statusEl.textContent = `Connected: ${data.name}`;
+        statusEl.style.color = 'var(--neon)';
+      }
+    } else {
+      toast(`ERROR:  ${platform}: ${data.error}`);
+      if (statusEl) {
+        statusEl.textContent = 'Connection failed';
+        statusEl.style.color = '#f62440';
+      }
+    }
+  } catch(e) {
+    toast(`ERROR:  Connection test failed: ${e.message}`);
+    if (statusEl) {
+      statusEl.textContent = 'Error';
+      statusEl.style.color = '#f62440';
+    }
+  }
+}
+
+async function loadSavedCredentials() {
+  try {
+    const res = await fetch(`${API}/api/credentials/load`);
+    const data = await res.json();
+    if (data.ok) {
+      const creds = data.credentials || {};
+      for (const [platform, credData] of Object.entries(creds)) {
+        if (typeof credData === 'object') {
+          for (const [field, val] of Object.entries(credData)) {
+            const el = document.getElementById(`cred-${platform}-${field}`);
+            if (el && val) el.placeholder = val; // Show masked value as placeholder
+          }
+          // If we have creds, update status
+          const statusEl = document.getElementById(`status-${platform}`);
+          if (statusEl && Object.values(credData).some(v => v)) {
+            statusEl.textContent = 'Credentials saved (click Test to verify)';
+            statusEl.style.color = 'var(--amber)';
+          }
+        }
+      }
+    }
+  } catch(e) {}
+}
+
+async function publishNow(platforms = []) {
+  if (!currentCarouselDraft) { toast('ERROR:  No active carousel. Please generate slides first.'); return; }
+  
+  toast(' Capturing all slide images...');
+  
+  // Capture each slide canvas as base64 PNG
+  const imageDataUrls = [];
+  const slides = currentCarouselDraft.slides || [];
+  
+  for (let i = 0; i < slides.length; i++) {
+    const slideEl = document.getElementById(`canvas-slide-${i}`);
+    if (slideEl) {
+      try {
+        const canvas = await html2canvas(slideEl, { scale: 2, useCORS: true, backgroundColor: null });
+        imageDataUrls.push(canvas.toDataURL('image/png'));
+      } catch(e) {
+        console.warn(`Slide ${i} capture failed:`, e);
+      }
+    }
+  }
+
+  if (imageDataUrls.length === 0) {
+    toast('ERROR:  Could not capture slide images. Make sure slides are visible.');
+    return;
+  }
+
+  toast(` Publishing ${imageDataUrls.length} slides to ${platforms.length ? platforms.join(', ') : 'all connected platforms'}...`);
+
+  const caption = (document.getElementById('edit-caption')?.value || currentCarouselDraft?.caption || '').trim();
+  const topic = currentCarouselDraft?.original_title || 'Tech Post';
+
+  try {
+    const res = await fetch(`${API}/api/publish/now`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic,
+        caption,
+        image_data_urls: imageDataUrls,
+        platforms
+      })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      toast(` Published! Platforms: ${data.published_to.join(', ')}`);
+    } else {
+      const failed = data.failed || [];
+      toast(`WARNING:  Partial publish. Success: ${(data.published_to||[]).join(',')||'none'} | Failed: ${failed.join(',')}`);
+    }
+  } catch(e) {
+    toast(`ERROR:  Publish failed: ${e.message}`);
   }
 }
 

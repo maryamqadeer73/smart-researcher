@@ -9,6 +9,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from fact_finder import get_authentic_facts
 from carousel_engine import generate_carousel_slides, generate_daily_briefing, get_autopilot_topic
+import uploader_service as uploader
 
 # Force standard streams to use UTF-8 to prevent encoding errors on Windows background tasks
 if hasattr(sys.stdout, 'reconfigure'):
@@ -548,6 +549,238 @@ def image_proxy():
     except Exception as e:
         print(f"[AI Image Proxy] Pollinations fallback failed: {e}")
         return "Failed to load image", 500
+
+# ── SOCIAL MEDIA CREDENTIALS & PUBLISHING ENDPOINTS ──────────────────────────
+
+@app.route("/api/credentials/save", methods=["POST"])
+def save_credentials():
+    """Save platform API credentials securely to settings.json."""
+    body = request.json or {}
+    settings = load_json_file(SETTINGS_FILE, {})
+    creds = settings.get("credentials", {})
+    # Merge in incoming credentials
+    for platform, cred_data in body.items():
+        if isinstance(cred_data, dict):
+            creds[platform] = {**creds.get(platform, {}), **cred_data}
+        else:
+            creds[platform] = cred_data
+    settings["credentials"] = creds
+    if save_json_file(SETTINGS_FILE, settings):
+        return jsonify({"ok": True, "message": "Credentials saved successfully!"})
+    return jsonify({"ok": False, "error": "Failed to save credentials"}), 500
+
+
+@app.route("/api/credentials/load", methods=["GET"])
+def load_credentials():
+    """Load saved credentials (masks sensitive tokens for display)."""
+    settings = load_json_file(SETTINGS_FILE, {})
+    creds = settings.get("credentials", {})
+    # Mask tokens for display — only show last 6 chars
+    masked = {}
+    for plat, data in creds.items():
+        masked[plat] = {}
+        if isinstance(data, dict):
+            for k, v in data.items():
+                if v and isinstance(v, str) and "token" in k.lower() or "secret" in k.lower():
+                    masked[plat][k] = "..." + v[-6:] if len(v) > 6 else "*****"
+                else:
+                    masked[plat][k] = v
+        else:
+            masked[plat] = data
+    return jsonify({"ok": True, "credentials": masked})
+
+
+@app.route("/api/accounts/test-connection", methods=["POST"])
+def test_connection():
+    """Verify API credentials for a given platform."""
+    body = request.json or {}
+    platform = body.get("platform", "").lower()
+    settings = load_json_file(SETTINGS_FILE, {})
+    creds = settings.get("credentials", {}).get(platform, {})
+
+    try:
+        if platform == "linkedin":
+            result = uploader.verify_linkedin_token(creds.get("access_token", ""))
+        elif platform == "instagram":
+            result = uploader.verify_instagram_token(creds.get("access_token", ""), creds.get("ig_user_id", ""))
+        elif platform == "youtube":
+            result = uploader.verify_youtube_credentials(
+                creds.get("refresh_token", ""),
+                creds.get("client_id", ""),
+                creds.get("client_secret", "")
+            )
+        elif platform == "tiktok":
+            result = uploader.verify_tiktok_token(creds.get("access_token", ""))
+        else:
+            return jsonify({"ok": False, "error": f"Unknown platform: {platform}"}), 400
+
+        # If verified, save the person URN for LinkedIn
+        if result.get("ok") and platform == "linkedin" and result.get("urn"):
+            settings["credentials"]["linkedin"]["person_urn"] = result["urn"]
+            save_json_file(SETTINGS_FILE, settings)
+
+        # Mark account as connected in accounts file
+        if result.get("ok"):
+            accounts = load_json_file(ACCOUNTS_FILE, {})
+            if platform not in accounts:
+                accounts[platform] = {}
+            accounts[platform]["connected"] = True
+            accounts[platform]["username"] = result.get("name", "Connected")
+            save_json_file(ACCOUNTS_FILE, accounts)
+
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/publish/now", methods=["POST"])
+def publish_now():
+    """
+    Immediately publish a post to all connected social platforms.
+    Expects: { topic, caption, slides, image_data_urls (list of base64 PNG strings),
+               platforms (list of platforms to post to) }
+    """
+    body = request.json or {}
+    caption = body.get("caption", "")
+    topic = body.get("topic", "New Post")
+    image_data_urls = body.get("image_data_urls", [])  # base64 PNG strings from the frontend canvas
+    platforms = body.get("platforms", [])  # e.g. ["instagram", "linkedin", "youtube", "tiktok"]
+
+    if not image_data_urls:
+        return jsonify({"ok": False, "error": "No slide images provided"}), 400
+
+    settings = load_json_file(SETTINGS_FILE, {})
+    creds = settings.get("credentials", {})
+    accounts = load_json_file(ACCOUNTS_FILE, {})
+
+    # If no platforms specified, use all connected ones
+    if not platforms:
+        platforms = [p for p, info in accounts.items() if info.get("connected")]
+
+    if not platforms:
+        return jsonify({"ok": False, "error": "No connected platforms found. Please connect your accounts first."}), 400
+
+    # Save slide images to temp PNG files
+    import tempfile
+    import base64
+    tmp_dir = tempfile.mkdtemp()
+    image_paths = []
+    for i, data_url in enumerate(image_data_urls):
+        # Strip the data URL prefix
+        if "," in data_url:
+            data_url = data_url.split(",", 1)[1]
+        img_data = base64.b64decode(data_url)
+        img_path = os.path.join(tmp_dir, f"slide_{i+1}.png")
+        with open(img_path, "wb") as f:
+            f.write(img_data)
+        image_paths.append(img_path)
+
+    results = {}
+
+    # ── LINKEDIN ──
+    if "linkedin" in platforms:
+        li_creds = creds.get("linkedin", {})
+        if li_creds.get("access_token") and li_creds.get("person_urn"):
+            print(f"[Publisher] Posting to LinkedIn...")
+            r = uploader.upload_to_linkedin(
+                li_creds["access_token"],
+                li_creds["person_urn"],
+                caption,
+                image_paths
+            )
+            results["linkedin"] = r
+            print(f"[Publisher] LinkedIn result: {r}")
+        else:
+            results["linkedin"] = {"ok": False, "error": "LinkedIn credentials not configured"}
+
+    # ── INSTAGRAM ──
+    if "instagram" in platforms:
+        ig_creds = creds.get("instagram", {})
+        if ig_creds.get("access_token") and ig_creds.get("ig_user_id") and ig_creds.get("image_host_urls"):
+            print(f"[Publisher] Posting to Instagram...")
+            r = uploader.upload_to_instagram(
+                ig_creds["access_token"],
+                ig_creds["ig_user_id"],
+                caption,
+                image_paths,
+                image_urls=ig_creds.get("image_host_urls", [])
+            )
+            results["instagram"] = r
+            print(f"[Publisher] Instagram result: {r}")
+        else:
+            results["instagram"] = {"ok": False, "error": "Instagram credentials not fully configured"}
+
+    # ── YOUTUBE SHORTS ──
+    if "youtube" in platforms:
+        yt_creds = creds.get("youtube", {})
+        if yt_creds.get("refresh_token") and yt_creds.get("client_id") and yt_creds.get("client_secret"):
+            print(f"[Publisher] Compiling video for YouTube Shorts...")
+            try:
+                video_path = os.path.join(tmp_dir, "carousel_short.mp4")
+                uploader.compile_slides_to_video(image_paths, video_path, fps=1, duration_per_slide=4)
+                print(f"[Publisher] Uploading to YouTube...")
+                r = uploader.upload_to_youtube(
+                    yt_creds["refresh_token"],
+                    yt_creds["client_id"],
+                    yt_creds["client_secret"],
+                    title=f"{topic} #Shorts",
+                    description=f"{caption}\n\n#TechWithMaryam #Shorts",
+                    video_path=video_path
+                )
+                results["youtube"] = r
+                print(f"[Publisher] YouTube result: {r}")
+            except Exception as e:
+                results["youtube"] = {"ok": False, "error": str(e)}
+        else:
+            results["youtube"] = {"ok": False, "error": "YouTube credentials not configured"}
+
+    # ── TIKTOK ──
+    if "tiktok" in platforms:
+        tt_creds = creds.get("tiktok", {})
+        if tt_creds.get("access_token"):
+            print(f"[Publisher] Compiling video for TikTok...")
+            try:
+                tt_video_path = os.path.join(tmp_dir, "tiktok_short.mp4")
+                uploader.compile_slides_to_video(image_paths, tt_video_path, fps=1, duration_per_slide=3)
+                print(f"[Publisher] Uploading to TikTok...")
+                r = uploader.upload_to_tiktok(
+                    tt_creds["access_token"],
+                    caption,
+                    tt_video_path
+                )
+                results["tiktok"] = r
+                print(f"[Publisher] TikTok result: {r}")
+            except Exception as e:
+                results["tiktok"] = {"ok": False, "error": str(e)}
+        else:
+            results["tiktok"] = {"ok": False, "error": "TikTok credentials not configured"}
+
+    # Log to history
+    connected_success = [p for p, r in results.items() if r.get("ok")]
+    connected_failed = [p for p, r in results.items() if not r.get("ok")]
+
+    history_entry = {
+        "type": "publish",
+        "topic": topic,
+        "caption": caption,
+        "platforms": connected_success,
+        "failed_platforms": connected_failed,
+        "results": results,
+        "ts": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+    history = load_json_file(HISTORY_FILE, [])
+    history.insert(0, history_entry)
+    save_json_file(HISTORY_FILE, history[:100])
+
+    all_ok = len(connected_success) > 0
+    return jsonify({
+        "ok": all_ok,
+        "results": results,
+        "published_to": connected_success,
+        "failed": connected_failed,
+        "message": f"Posted to: {', '.join(connected_success) or 'none'}" + (f" | Failed: {', '.join(connected_failed)}" if connected_failed else "")
+    })
+
 
 if __name__ == "__main__":
     print("\n[i] Smart Researcher starting...")
